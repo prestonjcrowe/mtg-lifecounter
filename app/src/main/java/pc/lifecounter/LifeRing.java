@@ -1,0 +1,76 @@
+package pc.lifecounter;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.View;
+import android.widget.TextView;
+
+/**
+ * Created by prestoncrowe on 6/29/17.
+ */
+
+public class LifeRing extends View {
+    private final Paint PAINT = new Paint();
+    private RectF base = new RectF(0, 0, 0, 0);
+    private int startLife = 20;
+    private TextView lifeTotal;
+    private float viewHeight;
+    private float viewWidth;
+    private float radius;
+    float circlePortion = 1;
+    float currentPortion = 1;
+
+    // instantiate in constructor..
+
+    public LifeRing(Context context) {
+        super(context);
+        setFocusable(true);
+        //createColor();
+    }
+    public LifeRing(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+
+        //createColor();
+    }
+
+    public LifeRing(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        //createColor();
+    }
+
+    public void setCounterReference(TextView counter) {
+        lifeTotal = counter;
+    }
+
+    public void setLife(int life) {
+        circlePortion = (float) life / startLife;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        viewHeight = canvas.getHeight();
+        viewWidth = canvas.getWidth();
+        radius = viewWidth / 4;
+        base.set(0, 0, radius * 2, radius * 2);
+        base.offset(radius, (viewHeight - radius * 2)/2);
+        canvas.drawColor(0); //
+        PAINT.setAntiAlias(true);
+        PAINT.setStyle(Paint.Style.STROKE);
+        PAINT.setStrokeWidth(4);
+        PAINT.setColor(Color.WHITE);
+
+        currentPortion = lerp(currentPortion, circlePortion, 0.1f);
+        if (Math.abs(circlePortion - currentPortion) <= 0.001f)
+            currentPortion = circlePortion;
+
+        canvas.drawArc(base, 270, -(360 * currentPortion), false, PAINT);
+    }
+
+    private float lerp(float value1, float value2, float amount) {
+        return value1 * (1 - amount) + (value2 * amount);
+    }
+}
