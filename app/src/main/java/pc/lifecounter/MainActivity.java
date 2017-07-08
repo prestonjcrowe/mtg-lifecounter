@@ -33,14 +33,16 @@ public class MainActivity extends AppCompatActivity {
         Button p2Plus = (Button) findViewById(R.id.p2Plus);
         Button p2Minus = (Button) findViewById(R.id.p2Minus);
 
-        setButtonListener(p1Minus, (TextView) findViewById(player1Total),
-                (LifeRing) findViewById(R.id.player1Ring), -1);
-        setButtonListener(p1Plus,  (TextView) findViewById(player1Total),
-                (LifeRing) findViewById(R.id.player1Ring), 1);
-        setButtonListener(p2Minus, (TextView) findViewById(player2Total),
-                (LifeRing) findViewById(R.id.player2Ring), -1);
-        setButtonListener(p2Plus,  (TextView) findViewById(player2Total),
-                (LifeRing) findViewById(R.id.player2Ring), 1);
+        initButtonListeners();
+
+//        setButtonListener(p1Minus, (TextView) findViewById(player1Total),
+//                (LifeRing) findViewById(R.id.player1Ring), -1);
+//        setButtonListener(p1Plus,  (TextView) findViewById(player1Total),
+//                (LifeRing) findViewById(R.id.player1Ring), 1);
+//        setButtonListener(p2Minus, (TextView) findViewById(player2Total),
+//                (LifeRing) findViewById(R.id.player2Ring), -1);
+//        setButtonListener(p2Plus,  (TextView) findViewById(player2Total),
+//                (LifeRing) findViewById(R.id.player2Ring), 1);
     }
 
     private int getTotal(TextView tv) {
@@ -60,8 +62,23 @@ public class MainActivity extends AppCompatActivity {
     private void reset(int start) {
         setTotal((TextView) findViewById(R.id.player1Total), start);
         setTotal((TextView) findViewById(R.id.player2Total), start);
-        ((LifeRing) findViewById(R.id.player1Ring)).setLife(start);
-        ((LifeRing) findViewById(R.id.player2Ring)).setLife(start);
+        ((LifeRing) findViewById(R.id.player1Ring)).setStart(start);
+        ((LifeRing) findViewById(R.id.player2Ring)).setStart(start);
+    }
+
+    public void initButtonListeners() {
+        setButtonListener((Button) findViewById(R.id.p1Minus),
+                (TextView) findViewById(player1Total),
+                (LifeRing) findViewById(R.id.player1Ring), -1);
+        setButtonListener((Button) findViewById(R.id.p1Plus),
+                (TextView) findViewById(player1Total),
+                (LifeRing) findViewById(R.id.player1Ring), 1);
+        setButtonListener((Button) findViewById(R.id.p2Minus),
+                (TextView) findViewById(player2Total),
+                (LifeRing) findViewById(R.id.player2Ring), -1);
+        setButtonListener((Button) findViewById(R.id.p2Plus),
+                (TextView) findViewById(player2Total),
+                (LifeRing) findViewById(R.id.player2Ring), 1);
     }
 
     public void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
@@ -79,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 initTouch = System.currentTimeMillis();
-                t.purge();
                 t.scheduleAtFixedRate(new TimerTask() {
 
                     @Override
@@ -129,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                         lifeRing.setLife(total);
                     }
                     t.purge();
-
+                    //t.cancel();
                 }
                 return false;
             }
@@ -192,5 +208,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void destoryListeners() {
+        System.out.println("destroying");
+        (findViewById(R.id.p1Minus)).setOnTouchListener(null);
+        (findViewById(R.id.p2Minus)).setOnTouchListener(null);
+        (findViewById(R.id.p1Plus)).setOnTouchListener(null);
+        (findViewById(R.id.p2Plus)).setOnTouchListener(null);
+    }
+
+    @Override
+    public void onStop() {
+        destoryListeners();
+        super.onStop();
+
+    }
+
+    @Override
+    public void onResume() {
+        System.out.println("resuming");
+        initButtonListeners();
+        super.onResume();
     }
 }
