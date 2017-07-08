@@ -7,25 +7,19 @@
     <!--android:title="@string/action_settings"-->
     <!--android:orderInCategory="100"-->
     <!--app:showAsAction="never" />-->
-
-    <item
-        android:id="@+id/single_player"
-        android:title="Single Player"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
     <item
         android:id="@+id/multiplayer"
         android:title="Multiplayer"
         android:orderInCategory="100"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/edh"
-        android:title="EDH"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/edh"-->
+        <!--android:title="EDH"-->
+        <!--android:orderInCategory="100"-->
+        <!--app:showAsAction="never" />-->
     <item
         android:id="@+id/action_reset"
-        android:title="reset"
+        android:title="Reset"
         android:orderInCategory="100"
         app:showAsAction="never" />
 </menu>

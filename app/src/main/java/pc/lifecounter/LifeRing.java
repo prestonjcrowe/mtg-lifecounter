@@ -9,6 +9,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
+import static android.graphics.Color.rgb;
+
 /**
  * Created by prestoncrowe on 6/29/17.
  */
@@ -42,10 +44,6 @@ public class LifeRing extends View {
         //createColor();
     }
 
-    public void setCounterReference(TextView counter) {
-        lifeTotal = counter;
-    }
-
     public void setLife(int life) {
         circlePortion = (float) life / startLife;
     }
@@ -64,10 +62,17 @@ public class LifeRing extends View {
         PAINT.setColor(Color.WHITE);
 
         currentPortion = lerp(currentPortion, circlePortion, 0.1f);
-        if (Math.abs(circlePortion - currentPortion) <= 0.001f)
+        if (Math.abs(circlePortion - currentPortion) <= 0.001f) {
             currentPortion = circlePortion;
-
-        canvas.drawArc(base, 270, -(360 * currentPortion), false, PAINT);
+        }
+        if (circlePortion > 1) {
+            PAINT.setColor(rgb(35, 255, 123));
+            canvas.drawOval(base, PAINT);
+            PAINT.setColor(Color.WHITE);
+            canvas.drawArc(base, 270, -(360 * currentPortion % 360), false, PAINT);
+        } else {
+            canvas.drawArc(base, 270, -(360 * currentPortion), false, PAINT);
+        }
     }
 
     private float lerp(float value1, float value2, float amount) {

@@ -20,10 +20,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.player2).setRotation(180);
 
         Button p1Plus = (Button) findViewById(R.id.p1Plus);
         Button p1Minus = (Button) findViewById(R.id.p1Minus);
-        findViewById(R.id.player2).setRotation(180);
         Button p2Plus = (Button) findViewById(R.id.p2Plus);
         Button p2Minus = (Button) findViewById(R.id.p2Minus);
 
@@ -49,6 +49,13 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tv.setText("" + 0);
         }
+    }
+
+    private void reset() {
+        setTotal((TextView) findViewById(R.id.player1Total), 20);
+        setTotal((TextView) findViewById(R.id.player2Total), 20);
+        ((LifeRing) findViewById(R.id.player1Ring)).setLife(20);
+        ((LifeRing) findViewById(R.id.player2Ring)).setLife(20);
     }
 
     public void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
@@ -127,6 +134,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem item = menu.findItem(R.id.multiplayer);
+        if (item.getTitle().toString().equals("Multiplayer")) {
+            item.setTitle("Single Player");
+        } else {
+            item.setTitle("Multiplayer");
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -135,14 +154,18 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_reset) {
-
-        } else if (id == R.id.single_player) {
-
+            reset();
         } else if (id == R.id.multiplayer) {
-
-        } else if (id == R.id.edh) {
-
+            reset();
+            if (item.getTitle().toString().equals("Multiplayer")) {
+                findViewById(R.id.player2).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.player2).setVisibility(View.GONE);
+            }
         }
+//        else if (id == R.id.edh) {
+//
+//        }
 
         return super.onOptionsItemSelected(item);
     }
