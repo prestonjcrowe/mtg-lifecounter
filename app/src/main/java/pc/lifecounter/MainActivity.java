@@ -172,9 +172,9 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_reset) {
             reset(startLife);
         } else if (id == R.id.multiplayer) {
-
             if (item.getTitle().toString().equals("Multiplayer")) {
                 findViewById(R.id.player2).setVisibility(View.VISIBLE);
+                reset(startLife);
             } else {
                 findViewById(R.id.player2).setVisibility(View.GONE);
             }

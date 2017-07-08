@@ -16,7 +16,8 @@
         app:layout_constraintTop_toTopOf="parent"
         android:background="@android:color/black"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintVertical_bias="0.0"
+        android:fontFamily="sans-serif-thin">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -54,6 +55,7 @@
                 android:background="@drawable/round_button"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:fontFamily="sans-serif-thin"
                 android:text="+"
                 android:id="@+id/p2Plus"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -67,6 +69,7 @@
                 android:background="@drawable/round_button"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:fontFamily="sans-serif-thin"
                 android:text="-"
                 android:id="@+id/p2Minus"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -112,6 +115,7 @@
                 android:background="@drawable/round_button"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:fontFamily="sans-serif-thin"
                 android:text="+"
                 android:id="@+id/p1Plus"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -125,6 +129,7 @@
                 android:background="@drawable/round_button"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:fontFamily="sans-serif-thin"
                 android:text="-"
                 android:id="@+id/p1Minus"
                 app:layout_constraintBottom_toBottomOf="parent"
