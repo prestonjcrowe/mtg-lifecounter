@@ -48,6 +48,11 @@ public class LifeRing extends View {
         circlePortion = (float) life / startLife;
     }
 
+    public void setStart(int start) {
+        startLife = start;
+        circlePortion = 1;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         viewHeight = canvas.getHeight();
@@ -65,7 +70,7 @@ public class LifeRing extends View {
         if (Math.abs(circlePortion - currentPortion) <= 0.001f) {
             currentPortion = circlePortion;
         }
-        if (circlePortion > 1) {
+        if (currentPortion >= 1) {
             PAINT.setColor(rgb(35, 255, 123));
             canvas.drawOval(base, PAINT);
             PAINT.setColor(Color.WHITE);

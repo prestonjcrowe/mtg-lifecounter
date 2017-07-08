@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     tools:context="pc.lifecounter.MainActivity">
 
-
-
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -39,6 +37,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-thin"
                 android:text="20"
                 android:textAlignment="center"
                 android:id="@+id/player2Total"
@@ -97,6 +96,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="20"
+                android:fontFamily="sans-serif-thin"
                 android:textAlignment="center"
                 android:id="@+id/player1Total"
                 android:layout_weight="1"

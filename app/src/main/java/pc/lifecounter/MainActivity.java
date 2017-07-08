@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -16,14 +17,18 @@ import static pc.lifecounter.R.id.player2Total;
 
 public class MainActivity extends AppCompatActivity {
 
+    private int startLife = 20;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         findViewById(R.id.player2).setRotation(180);
 
         Button p1Plus = (Button) findViewById(R.id.p1Plus);
         Button p1Minus = (Button) findViewById(R.id.p1Minus);
+
         Button p2Plus = (Button) findViewById(R.id.p2Plus);
         Button p2Minus = (Button) findViewById(R.id.p2Minus);
 
@@ -51,11 +56,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void reset() {
-        setTotal((TextView) findViewById(R.id.player1Total), 20);
-        setTotal((TextView) findViewById(R.id.player2Total), 20);
-        ((LifeRing) findViewById(R.id.player1Ring)).setLife(20);
-        ((LifeRing) findViewById(R.id.player2Ring)).setLife(20);
+    private void reset(int start) {
+        setTotal((TextView) findViewById(R.id.player1Total), start);
+        setTotal((TextView) findViewById(R.id.player2Total), start);
+        ((LifeRing) findViewById(R.id.player1Ring)).setLife(start);
+        ((LifeRing) findViewById(R.id.player2Ring)).setLife(start);
     }
 
     public void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
@@ -65,12 +70,14 @@ public class MainActivity extends AppCompatActivity {
 
         b.setOnTouchListener(new View.OnTouchListener() {
             boolean buttonHeld = false;
+            long initTouch;
             long touchTime = 0;
             Timer t = new Timer();
 
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                initTouch = System.currentTimeMillis();
                 t.purge();
                 t.scheduleAtFixedRate(new ButtonTask(textView) {
 
@@ -80,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 lifeRing.invalidate();
-                                if(buttonHeld && touchTime < System.currentTimeMillis() - 750) {
+                                if(buttonHeld && touchTime < System.currentTimeMillis() - 500) {
                                     int total = getTotal(textView);
                                     System.out.println(total);
                                     if (buttonType <= 0) {
@@ -93,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     setTotal(textView, total);
                                     lifeRing.setLife(total);
-                                    touchTime += 750;
+                                    touchTime += 500;
                                 }
                             }
                         });
@@ -106,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     buttonHeld = false;
-                    if (System.currentTimeMillis() - touchTime < 750) {
+                    if (System.currentTimeMillis() - touchTime < 500 &&
+                            System.currentTimeMillis() - initTouch < 500) {
                         int total = getTotal(textView);
                         if (buttonType <= 0) {
                             total --;
@@ -136,11 +144,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.multiplayer);
-        if (item.getTitle().toString().equals("Multiplayer")) {
-            item.setTitle("Single Player");
-        } else {
-            item.setTitle("Multiplayer");
+        MenuItem mode = menu.findItem(R.id.multiplayer);
+        MenuItem edh = menu.findItem(R.id.edh);
+        if (mode.getTitle().toString().equals("Multiplayer") &&
+                findViewById(R.id.player2).getVisibility() == View.VISIBLE) {
+            mode.setTitle("Single Player");
+        } else if (findViewById(R.id.player2).getVisibility() == View.GONE){
+            mode.setTitle("Multiplayer");
+        }
+        if (edh.getTitle().toString().equals("Standard")  && startLife != 40) {
+            edh.setTitle("EDH");
+        } else if (startLife != 20){
+            edh.setTitle("Standard");
         }
         return true;
     }
@@ -154,18 +169,26 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_reset) {
-            reset();
+            reset(startLife);
         } else if (id == R.id.multiplayer) {
-            reset();
+
             if (item.getTitle().toString().equals("Multiplayer")) {
                 findViewById(R.id.player2).setVisibility(View.VISIBLE);
             } else {
                 findViewById(R.id.player2).setVisibility(View.GONE);
             }
+            reset(startLife);
         }
-//        else if (id == R.id.edh) {
-//
-//        }
+        else if (id == R.id.edh) {
+            if (item.getTitle().toString().equals("EDH")) {
+                startLife = 40;
+                reset(startLife);
+            }
+            else {
+                startLife = 20;
+                reset(startLife);
+            }
+        }
 
         return super.onOptionsItemSelected(item);
     }
