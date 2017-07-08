@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.Timer;
+import java.util.TimerTask;
 
 import static pc.lifecounter.R.id.player1Total;
 import static pc.lifecounter.R.id.player2Total;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 initTouch = System.currentTimeMillis();
                 t.purge();
-                t.scheduleAtFixedRate(new ButtonTask(textView) {
+                t.scheduleAtFixedRate(new TimerTask() {
 
                     @Override
                     public void run() {
