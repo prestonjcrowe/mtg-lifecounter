@@ -11,12 +11,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final int REPEAT = 500; // # of ms between held button triggers
+
     private int startLife = 20;
+    private List<Timer> timers = new ArrayList<>();
 
     // Player 1 views
     private Button p1Plus;
@@ -84,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Destroys onTouch listeners (timers can cause leak)
     private void destroyListeners() {
+        for (Timer t : timers) {
+            t.cancel();
+            t.purge();
+        }
+        timers.clear();
         p1Minus.setOnTouchListener(null);
         p2Minus.setOnTouchListener(null);
         p1Plus.setOnTouchListener(null);
@@ -97,12 +107,14 @@ public class MainActivity extends AppCompatActivity {
         final TextView textView = tv;
         final LifeRing lifeRing = ring;
         final int buttonType = type;
+        final Timer t = new Timer();
+        timers.add(t);
 
         b.setOnTouchListener(new View.OnTouchListener() {
             boolean buttonHeld = false;
-            long initTouch;
-            long touchTime = 0;
-            Timer t = new Timer();
+            long initTouch = 0; // Determines whether touch was a tap or hold
+            long touchTime = 0; // Time at which repeat was last registered
+            int total = 0;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -115,9 +127,8 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 lifeRing.invalidate();
-                                if(buttonHeld && touchTime < System.currentTimeMillis() - 500) {
-                                    int total = getTotal(textView);
-                                    System.out.println(total);
+                                if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
+                                    total = getTotal(textView);
                                     if (buttonType <= 0) {
                                         total -= 5;
                                     } else {
@@ -128,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     setTotal(textView, total);
                                     lifeRing.setLife(total);
-                                    touchTime += 500;
+                                    touchTime += REPEAT;
                                 }
                             }
                         });
@@ -141,9 +152,9 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     buttonHeld = false;
-                    if (System.currentTimeMillis() - touchTime < 500 &&
-                            System.currentTimeMillis() - initTouch < 500) {
-                        int total = getTotal(textView);
+                    if (System.currentTimeMillis() - touchTime < REPEAT &&
+                            System.currentTimeMillis() - initTouch < REPEAT) {
+                        total = getTotal(textView);
                         if (buttonType <= 0) {
                             total --;
                         } else {
