@@ -1,5 +1,6 @@
 package pc.lifecounter;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -13,75 +14,86 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static pc.lifecounter.R.id.player1Total;
-import static pc.lifecounter.R.id.player2Total;
-
 public class MainActivity extends AppCompatActivity {
 
     private int startLife = 20;
+
+    // Player 1 views
+    private Button p1Plus;
+    private Button p1Minus;
+    private TextView p1Total;
+    private LifeRing p1Ring;
+
+    // Player 2 views
+    private Button p2Plus;
+    private Button p2Minus;
+    private TextView p2Total;
+    private LifeRing p2Ring;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        // Invert player 2
         findViewById(R.id.player2).setRotation(180);
 
-        Button p1Plus = (Button) findViewById(R.id.p1Plus);
-        Button p1Minus = (Button) findViewById(R.id.p1Minus);
+        // Set references to each player's views
+        p1Plus = (Button) findViewById(R.id.p1Plus);
+        p1Minus = (Button) findViewById(R.id.p1Minus);
+        p1Total =  (TextView) findViewById(R.id.player1Total);
+        p1Ring = (LifeRing) findViewById(R.id.player1Ring);
 
-        Button p2Plus = (Button) findViewById(R.id.p2Plus);
-        Button p2Minus = (Button) findViewById(R.id.p2Minus);
+        p2Plus = (Button) findViewById(R.id.p2Plus);
+        p2Minus = (Button) findViewById(R.id.p2Minus);
+        p2Total =  (TextView) findViewById(R.id.player2Total);
+        p2Ring = (LifeRing) findViewById(R.id.player2Ring);
 
+        // Set onTouch listeners for each +/- button
         initButtonListeners();
-
-//        setButtonListener(p1Minus, (TextView) findViewById(player1Total),
-//                (LifeRing) findViewById(R.id.player1Ring), -1);
-//        setButtonListener(p1Plus,  (TextView) findViewById(player1Total),
-//                (LifeRing) findViewById(R.id.player1Ring), 1);
-//        setButtonListener(p2Minus, (TextView) findViewById(player2Total),
-//                (LifeRing) findViewById(R.id.player2Ring), -1);
-//        setButtonListener(p2Plus,  (TextView) findViewById(player2Total),
-//                (LifeRing) findViewById(R.id.player2Ring), 1);
     }
 
+    // Returns TextView's integer value
     private int getTotal(TextView tv) {
-        System.out.println("" + Integer.parseInt(tv.getText().toString()));
         return Integer.parseInt(tv.getText().toString());
     }
 
+    // Sets TextView to display given int
     private void setTotal(TextView tv, int newTotal) {
-
-        if (newTotal > 0) {
-            tv.setText("" + newTotal);
-        } else {
-            tv.setText("" + 0);
-        }
+        tv.setText("" + newTotal);
     }
 
+    // Sets life values to start life, animates rings and sets
+    // their start life as well (i.e what # == full circle)
     private void reset(int start) {
-        setTotal((TextView) findViewById(R.id.player1Total), start);
-        setTotal((TextView) findViewById(R.id.player2Total), start);
-        ((LifeRing) findViewById(R.id.player1Ring)).setStart(start);
-        ((LifeRing) findViewById(R.id.player2Ring)).setStart(start);
+        setTotal(p1Total, start);
+        setTotal(p2Total, start);
+        p1Ring.setStart(start);
+        p2Ring.setStart(start);
     }
 
-    public void initButtonListeners() {
-        setButtonListener((Button) findViewById(R.id.p1Minus),
-                (TextView) findViewById(player1Total),
-                (LifeRing) findViewById(R.id.player1Ring), -1);
-        setButtonListener((Button) findViewById(R.id.p1Plus),
-                (TextView) findViewById(player1Total),
-                (LifeRing) findViewById(R.id.player1Ring), 1);
-        setButtonListener((Button) findViewById(R.id.p2Minus),
-                (TextView) findViewById(player2Total),
-                (LifeRing) findViewById(R.id.player2Ring), -1);
-        setButtonListener((Button) findViewById(R.id.p2Plus),
-                (TextView) findViewById(player2Total),
-                (LifeRing) findViewById(R.id.player2Ring), 1);
+    // Sets onTouch listeners for each +/- button
+    private void initButtonListeners() {
+        setButtonListener(p1Minus, p1Total, p1Ring, -1);
+        setButtonListener(p1Plus, p1Total, p1Ring, 1);
+        setButtonListener(p2Minus, p2Total, p2Ring, -1);
+        setButtonListener(p2Plus, p2Total, p2Ring, 1);
     }
 
-    public void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
+    // Destroys onTouch listeners (timers can cause leak)
+    private void destroyListeners() {
+        p1Minus.setOnTouchListener(null);
+        p2Minus.setOnTouchListener(null);
+        p1Plus.setOnTouchListener(null);
+        p2Plus.setOnTouchListener(null);
+    }
+
+    // Given a Button, TextView, LifeRing, and button type (+/-),
+    // sets an onTouch listener that updates life total and
+    // animates ring appropriately on button touch / hold
+    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
         final TextView textView = tv;
         final LifeRing lifeRing = ring;
         final int buttonType = type;
@@ -91,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
             long initTouch;
             long touchTime = 0;
             Timer t = new Timer();
-
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -145,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                         lifeRing.setLife(total);
                     }
                     t.purge();
-                    //t.cancel();
                 }
                 return false;
             }
@@ -179,15 +189,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a boner activity in AndroidManifest.xml.
-
         int id = item.getItemId();
 
         if (id == R.id.action_reset) {
             reset(startLife);
-        } else if (id == R.id.multiplayer) {
+        }
+        else if (id == R.id.multiplayer) {
             if (item.getTitle().toString().equals("Multiplayer")) {
                 findViewById(R.id.player2).setVisibility(View.VISIBLE);
                 reset(startLife);
@@ -210,24 +217,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void destoryListeners() {
-        System.out.println("destroying");
-        (findViewById(R.id.p1Minus)).setOnTouchListener(null);
-        (findViewById(R.id.p2Minus)).setOnTouchListener(null);
-        (findViewById(R.id.p1Plus)).setOnTouchListener(null);
-        (findViewById(R.id.p2Plus)).setOnTouchListener(null);
-    }
-
     @Override
     public void onStop() {
-        destoryListeners();
+        destroyListeners();
         super.onStop();
 
     }
 
     @Override
     public void onResume() {
-        System.out.println("resuming");
         initButtonListeners();
         super.onResume();
     }

@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.TextView;
 
 import static android.graphics.Color.rgb;
 
@@ -19,29 +18,22 @@ public class LifeRing extends View {
     private final Paint PAINT = new Paint();
     private RectF base = new RectF(0, 0, 0, 0);
     private int startLife = 20;
-    private TextView lifeTotal;
     private float viewHeight;
     private float viewWidth;
     private float radius;
-    float circlePortion = 1;
-    float currentPortion = 1;
-
-    // instantiate in constructor..
+    private float circlePortion = 1;
+    private float currentPortion = 1;
 
     public LifeRing(Context context) {
         super(context);
         setFocusable(true);
-        //createColor();
     }
     public LifeRing(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-
-        //createColor();
     }
 
     public LifeRing(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        //createColor();
     }
 
     public void setLife(int life) {
