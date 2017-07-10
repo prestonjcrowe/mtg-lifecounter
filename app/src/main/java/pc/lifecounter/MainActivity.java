@@ -18,10 +18,10 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final int REPEAT = 500; // # of ms between held button triggers
-
     private int startLife = 20;
-    private List<Timer> timers = new ArrayList<>();
+    private List<Timer> timers = new ArrayList<>(); // For memory management
+
+    private final int REPEAT = 500; // # of ms between held button triggers
 
     // Player 1 views
     private Button p1Plus;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        // Invert player 2
+        // Invert player 2 view
         findViewById(R.id.player2).setRotation(180);
 
         // Set references to each player's views
@@ -184,12 +184,14 @@ public class MainActivity extends AppCompatActivity {
         super.onPrepareOptionsMenu(menu);
         MenuItem mode = menu.findItem(R.id.multiplayer);
         MenuItem edh = menu.findItem(R.id.edh);
+
         if (mode.getTitle().toString().equals("Multiplayer") &&
                 findViewById(R.id.player2).getVisibility() == View.VISIBLE) {
             mode.setTitle("Single Player");
         } else if (findViewById(R.id.player2).getVisibility() == View.GONE){
             mode.setTitle("Multiplayer");
         }
+
         if (edh.getTitle().toString().equals("Standard")  && startLife != 40) {
             edh.setTitle("EDH");
         } else if (startLife != 20){
@@ -205,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_reset) {
             reset(startLife);
         }
+
         else if (id == R.id.multiplayer) {
             if (item.getTitle().toString().equals("Multiplayer")) {
                 findViewById(R.id.player2).setVisibility(View.VISIBLE);
@@ -214,12 +217,12 @@ public class MainActivity extends AppCompatActivity {
             }
             reset(startLife);
         }
+
         else if (id == R.id.edh) {
             if (item.getTitle().toString().equals("EDH")) {
                 startLife = 40;
                 reset(startLife);
-            }
-            else {
+            } else {
                 startLife = 20;
                 reset(startLife);
             }
@@ -232,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
     public void onStop() {
         destroyListeners();
         super.onStop();
-
     }
 
     @Override
