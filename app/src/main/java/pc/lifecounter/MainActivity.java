@@ -22,12 +22,15 @@ public class MainActivity extends AppCompatActivity {
 
     private int startLife = 20;
     private List<Timer> timers = new ArrayList<>();
+    private boolean p1CommanderActive = false;
+    private boolean p2CommanderActive = false;
 
     // Player 1 views
     private Button p1Plus;
     private Button p1Minus;
     private TextView p1Total;
     private LifeRing p1Ring;
+    private TextView p1Commander;
 
     // Player 2 views
     private Button p2Plus;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         p1Minus = (Button) findViewById(R.id.p1Minus);
         p1Total =  (TextView) findViewById(R.id.player1Total);
         p1Ring = (LifeRing) findViewById(R.id.player1Ring);
+        p1Commander = (TextView) findViewById(R.id.player1Commander);
 
         p2Plus = (Button) findViewById(R.id.p2Plus);
         p2Minus = (Button) findViewById(R.id.p2Minus);
@@ -58,6 +62,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Set onTouch listeners for each +/- button
         initButtonListeners();
+
+        p1Commander.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(p1CommanderActive) {
+                        p1CommanderActive = false;
+                    } else {
+                        p1CommanderActive = true;
+                    }
+
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     // Returns TextView's integer value
@@ -100,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         p2Plus.setOnTouchListener(null);
     }
 
+
     // Given a Button, TextView, LifeRing, and button type (+/-),
     // sets an onTouch listener that updates life total and
     // animates ring appropriately on button touch / hold
@@ -128,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 lifeRing.invalidate();
                                 if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
+                                    if (!)
                                     total = getTotal(textView);
                                     if (buttonType <= 0) {
                                         total -= 5;
