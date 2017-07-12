@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private Button p1Minus;
     private TextView p1Total;
     private LifeRing p1Ring;
-    private TextView p1Commander;
+    private Button p1Commander;
 
     // Player 2 views
     private Button p2Plus;
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         p1Minus = (Button) findViewById(R.id.p1Minus);
         p1Total =  (TextView) findViewById(R.id.player1Total);
         p1Ring = (LifeRing) findViewById(R.id.player1Ring);
-        p1Commander = (TextView) findViewById(R.id.player1Commander);
+        p1Commander = (Button) findViewById(R.id.player1Commander);
 
         p2Plus = (Button) findViewById(R.id.p2Plus);
         p2Minus = (Button) findViewById(R.id.p2Minus);
@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         p1Commander.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                System.out.println("COMMANDER TOUCHED");
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if(p1CommanderActive) {
                         p1CommanderActive = false;
@@ -101,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Sets onTouch listeners for each +/- button
     private void initButtonListeners() {
-        setButtonListener(p1Minus, p1Total, p1Ring, -1);
-        setButtonListener(p1Plus, p1Total, p1Ring, 1);
-        setButtonListener(p2Minus, p2Total, p2Ring, -1);
-        setButtonListener(p2Plus, p2Total, p2Ring, 1);
+        setButtonListener(p1Minus, p1Total, p1Ring, -1, p1Commander);
+        setButtonListener(p1Plus, p1Total, p1Ring, 1, p1Commander);
+        setButtonListener(p2Minus, p2Total, p2Ring, -1, p1Commander);
+        setButtonListener(p2Plus, p2Total, p2Ring, 1, p1Commander);
     }
 
     // Destroys onTouch listeners (timers can cause leak)
@@ -124,11 +125,12 @@ public class MainActivity extends AppCompatActivity {
     // Given a Button, TextView, LifeRing, and button type (+/-),
     // sets an onTouch listener that updates life total and
     // animates ring appropriately on button touch / hold
-    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
+    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type, final TextView comm) {
         final TextView textView = tv;
         final LifeRing lifeRing = ring;
         final int buttonType = type;
         final Timer t = new Timer();
+        final Button butt = b;
         timers.add(t);
 
         b.setOnTouchListener(new View.OnTouchListener() {
@@ -136,9 +138,11 @@ public class MainActivity extends AppCompatActivity {
             long initTouch = 0; // Determines whether touch was a tap or hold
             long touchTime = 0; // Time at which repeat was last registered
             int total = 0;
-
+            int commander = 0;
+            String buttonID = (getResources().getResourceName(butt.getId())).substring(18,20);
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                //System.out.println(buttonID);
                 initTouch = System.currentTimeMillis();
                 t.scheduleAtFixedRate(new TimerTask() {
 
@@ -149,17 +153,32 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 lifeRing.invalidate();
                                 if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
-                                    if (!)
                                     total = getTotal(textView);
+                                    commander = getTotal(comm);
+                                    // write this logic into separate function?
                                     if (buttonType <= 0) {
                                         total -= 5;
+                                        if (buttonID.equals("p1") && p1CommanderActive ||
+                                                buttonID.equals("p2") && p2CommanderActive) {
+                                            commander -=5;
+                                        }
                                     } else {
                                         total += 5;
+                                        if (buttonID.equals("p1") && p1CommanderActive ||
+                                                buttonID.equals("p2") && p2CommanderActive) {
+                                            commander +=5;
+                                        }
                                     }
                                     if (total < 0) {
                                         total = 0;
                                     }
+                                    if (commander < 0) {
+                                        commander = 0;
+                                    } else if (commander > 21) {
+                                        commander = 21;
+                                    }
                                     setTotal(textView, total);
+                                    setTotal(comm, commander);
                                     lifeRing.setLife(total);
                                     touchTime += REPEAT;
                                 }
@@ -177,18 +196,33 @@ public class MainActivity extends AppCompatActivity {
                     if (System.currentTimeMillis() - touchTime < REPEAT &&
                             System.currentTimeMillis() - initTouch < REPEAT) {
                         total = getTotal(textView);
+                        commander = getTotal(comm);
                         if (buttonType <= 0) {
                             total --;
+                            if (buttonID.equals("p1") && p1CommanderActive ||
+                                    buttonID.equals("p2") && p2CommanderActive) {
+                                commander --;
+                            }
                         } else {
                             total ++;
+                            if (buttonID.equals("p1") && p1CommanderActive ||
+                                    buttonID.equals("p2") && p2CommanderActive && commander < 21) {
+                                commander ++;
+                            }
                         }
                         if (total < 0) {
                             total = 0;
                         }
+                        if (commander < 0) {
+                            total = 0;
+                        }
                         setTotal(textView, total);
+                        setTotal(comm, commander);
+
                         lifeRing.setLife(total);
                     }
                     t.purge();
+                    System.out.println("THIS (task?) = " + this.toString());
                 }
                 return false;
             }
