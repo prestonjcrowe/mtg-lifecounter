@@ -70,8 +70,10 @@ public class MainActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if(p1CommanderActive) {
                         p1CommanderActive = false;
+                        p1Commander.setBackgroundResource(R.drawable.toggle_off);
                     } else {
                         p1CommanderActive = true;
+                        p1Commander.setBackgroundResource(R.drawable.toggle_on);
                     }
 
                     return true;
@@ -96,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
     private void reset(int start) {
         setTotal(p1Total, start);
         setTotal(p2Total, start);
+
+        setTotal(p1Commander, 0);
+
         p1Ring.setStart(start);
         p2Ring.setStart(start);
     }
@@ -125,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
     // Given a Button, TextView, LifeRing, and button type (+/-),
     // sets an onTouch listener that updates life total and
     // animates ring appropriately on button touch / hold
-    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type, final TextView comm) {
+    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type, final Button comm) {
         final TextView textView = tv;
         final LifeRing lifeRing = ring;
         final int buttonType = type;
@@ -200,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         if (buttonType <= 0) {
                             total --;
                             if (buttonID.equals("p1") && p1CommanderActive ||
-                                    buttonID.equals("p2") && p2CommanderActive) {
+                                    buttonID.equals("p2") && p2CommanderActive && commander > 0) {
                                 commander --;
                             }
                         } else {
