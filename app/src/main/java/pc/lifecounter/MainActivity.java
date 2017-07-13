@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             long initTouch = 0; // Determines whether touch was a tap or hold
             long touchTime = 0; // Time at which repeat was last registered
             int total = 0;
+            boolean heldTriggered = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 lifeRing.invalidate();
                                 if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
+                                    heldTriggered  = true;
                                     total = getTotal(textView);
                                     if (buttonType <= 0) {
                                         total -= 5;
@@ -148,13 +150,13 @@ public class MainActivity extends AppCompatActivity {
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     buttonHeld = true;
+                    heldTriggered  = false;
                     touchTime = System.currentTimeMillis();
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     buttonHeld = false;
-                    if (System.currentTimeMillis() - touchTime < REPEAT &&
-                            System.currentTimeMillis() - initTouch < REPEAT) {
-                        total = getTotal(textView);
+                    if (!heldTriggered) {
+                                total = getTotal(textView);
                         if (buttonType <= 0) {
                             total --;
                         } else {
@@ -166,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
                         setTotal(textView, total);
                         lifeRing.setLife(total);
                     }
+                    heldTriggered = false;
                     t.purge();
                 }
                 return false;
