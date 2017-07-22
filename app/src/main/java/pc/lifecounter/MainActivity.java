@@ -1,6 +1,7 @@
 package pc.lifecounter;
 
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -15,6 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+
+// write method commanderActive that returns a boolean, based on drawable attr
+// rewrite runnables as custom timer tasks?
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private Button p2Minus;
     private TextView p2Total;
     private LifeRing p2Ring;
+
+    private long lastInteraction = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,18 +70,19 @@ public class MainActivity extends AppCompatActivity {
         // Set onTouch listeners for each +/- button
         initButtonListeners();
 
-        p1Commander.setOnTouchListener(new View.OnTouchListener() {
+        // keep track of last touch to both buttons AND commander button
+        // define as global var to start, then move to setListeners func
+
+        p1Total.setOnTouchListener(new View.OnTouchListener() {
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                System.out.println("COMMANDER TOUCHED");
+                //System.out.println(buttonID);
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if(p1CommanderActive) {
-                        p1CommanderActive = false;
-                        p1Commander.setBackgroundResource(R.drawable.toggle_off);
-                    } else {
-                        p1CommanderActive = true;
-                        p1Commander.setBackgroundResource(R.drawable.toggle_on);
-                    }
+                    lastInteraction = System.currentTimeMillis();
+                    p1CommanderActive = true;
+                    p1Commander.setBackgroundResource(R.drawable.toggle_on);
 
                     return true;
                 }
@@ -186,6 +194,29 @@ public class MainActivity extends AppCompatActivity {
                                     setTotal(comm, commander);
                                     lifeRing.setLife(total);
                                     touchTime += REPEAT;
+
+                                    lastInteraction = System.currentTimeMillis();
+                                }
+                                // can be separate func
+
+                                if (lastInteraction + 3000 < System.currentTimeMillis()) {
+                                    p1CommanderActive = false;
+                                    p1Commander.setBackgroundResource(R.drawable.toggle_off);
+                                    if (p1Ring.getCommander()) {
+                                        p1Ring.setCommander(false);
+                                    }
+
+                                } else if(lastInteraction + 2000 < System.currentTimeMillis()) {
+                                    p1Commander.setBackgroundResource(R.drawable.toggle_half);
+                                    p1Ring.setOuterColor(Color.parseColor("#7fffffff"));
+                                } else {
+                                    //System.out.println("LAST INNER FACTION: " + lastInteraction);
+                                    if (!p1Ring.getCommander()) {
+                                        p1Ring.setCommander(true);
+                                    }
+                                    p1Commander.setBackgroundResource(R.drawable.toggle_on);
+                                    p1Ring.setOuterColor(Color.parseColor("#fffffff"));
+                                    //p1Ring.setCommander(true);
                                 }
                             }
                         });
@@ -195,8 +226,10 @@ public class MainActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     buttonHeld = true;
                     touchTime = System.currentTimeMillis();
+                    lastInteraction = System.currentTimeMillis();
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    lastInteraction = System.currentTimeMillis();
                     buttonHeld = false;
                     if (System.currentTimeMillis() - touchTime < REPEAT &&
                             System.currentTimeMillis() - initTouch < REPEAT) {
@@ -219,7 +252,9 @@ public class MainActivity extends AppCompatActivity {
                             total = 0;
                         }
                         if (commander < 0) {
-                            total = 0;
+                            commander = 0;
+                        } else if (commander > 21) {
+                            commander = 21;
                         }
                         setTotal(textView, total);
                         setTotal(comm, commander);

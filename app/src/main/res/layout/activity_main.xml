@@ -142,10 +142,13 @@
                 android:id="@+id/player1Commander"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-thin"
                 android:text="0"
-                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:background="@drawable/commander_button"
+                android:layout_margin="10dp"
 />
 
         </android.support.constraint.ConstraintLayout>
