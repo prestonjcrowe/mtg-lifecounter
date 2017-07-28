@@ -1,6 +1,7 @@
 package pc.lifecounter;
 
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -27,7 +28,18 @@ public class MainActivity extends AppCompatActivity {
     private Button p1Plus;
     private Button p1Minus;
     private TextView p1Total;
+    private TextView p1Commander;
     private LifeRing p1Ring;
+
+    private long p1LastTouched;
+    private boolean commanderMode = false;
+
+    private PlayerState p1State = new PlayerState();
+
+    // could pass these as a map, that way can pass long by ref
+    // "plus" : p1Plus, "total" : p1Total, etc
+    // this is important for being able to update lastTouched
+    // can also store commanderActive in this data struct
 
     // Player 2 views
     private Button p2Plus;
@@ -50,11 +62,41 @@ public class MainActivity extends AppCompatActivity {
         p1Minus = (Button) findViewById(R.id.p1Minus);
         p1Total =  (TextView) findViewById(R.id.player1Total);
         p1Ring = (LifeRing) findViewById(R.id.player1Ring);
+        p1Commander = (TextView) findViewById(R.id.player1Commander);
 
         p2Plus = (Button) findViewById(R.id.p2Plus);
         p2Minus = (Button) findViewById(R.id.p2Minus);
         p2Total =  (TextView) findViewById(R.id.player2Total);
         p2Ring = (LifeRing) findViewById(R.id.player2Ring);
+
+        p1Total.setOnTouchListener(new View.OnTouchListener() {
+            Timer t = new Timer();
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                //commanderMode = true;
+                //p1LastTouched = System.currentTimeMillis();
+                p1State.setCommanderMode(true);
+                p1State.setLastTouched(System.currentTimeMillis());
+                p1Commander.setTextColor(Color.RED);
+                t.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (p1State.getLastTouch() + 2000 < System.currentTimeMillis()) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    p1Commander.setTextColor(Color.WHITE);
+                                    p1State.setCommanderMode(false);
+                                }
+                            });
+
+                        }
+                    }
+                }, 0, 250);
+
+                return false;
+            }
+        });
 
         // Set onTouch listeners for each +/- button
         initButtonListeners();
@@ -75,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     private void reset(int start) {
         setTotal(p1Total, start);
         setTotal(p2Total, start);
+        setTotal(p1Commander, 0);
+        //setTotal(p2Commander, 0);
         p1Ring.setStart(start);
         p2Ring.setStart(start);
     }
@@ -115,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
             long initTouch = 0; // Determines whether touch was a tap or hold
             long touchTime = 0; // Time at which repeat was last registered
             int total = 0;
+            int commander = 0;
             boolean heldTriggered = false;
 
             @Override
@@ -131,8 +176,17 @@ public class MainActivity extends AppCompatActivity {
                                 if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
                                     heldTriggered  = true;
                                     total = getTotal(textView);
+                                    commander = getTotal(p1Commander);
+
                                     if (buttonType <= 0) {
                                         total -= 5;
+                                        if (p1State.getMode()) {
+                                            commander += 5;
+                                            if (commander > 21) {
+                                                commander = 21;
+                                            }
+                                            setTotal(p1Commander, commander);
+                                        }
                                     } else {
                                         total += 5;
                                     }
@@ -142,6 +196,8 @@ public class MainActivity extends AppCompatActivity {
                                     setTotal(textView, total);
                                     lifeRing.setLife(total);
                                     touchTime += REPEAT;
+                                    //
+                                    p1State.setLastTouched(System.currentTimeMillis());
                                 }
                             }
                         });
@@ -152,18 +208,32 @@ public class MainActivity extends AppCompatActivity {
                     buttonHeld = true;
                     heldTriggered  = false;
                     touchTime = System.currentTimeMillis();
+                    //
+                    p1State.setLastTouched(System.currentTimeMillis());
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     buttonHeld = false;
+                    //
+                    p1State.setLastTouched(System.currentTimeMillis());
                     if (!heldTriggered) {
                                 total = getTotal(textView);
                         if (buttonType <= 0) {
                             total --;
+                            if (p1State.getMode()) {
+                                commander++;
+                                if (commander > 21) {
+                                    commander = 21;
+                                }
+                                setTotal(p1Commander, commander);
+                            }
                         } else {
                             total ++;
                         }
                         if (total < 0) {
                             total = 0;
+                        }
+                        if (commander > 21) {
+                            commander = 21;
                         }
                         setTotal(textView, total);
                         lifeRing.setLife(total);
