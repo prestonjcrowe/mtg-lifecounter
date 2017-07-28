@@ -28,4 +28,9 @@ public class PlayerState {
     public void setCommanderMode(boolean mode) {
         commanderMode = mode;
     }
+
+    public void resetState() {
+        lastTouched = 0;
+        commanderMode = false;
+    }
 }

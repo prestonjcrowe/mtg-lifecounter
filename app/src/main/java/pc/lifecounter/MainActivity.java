@@ -30,11 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView p1Total;
     private TextView p1Commander;
     private LifeRing p1Ring;
-
-    private long p1LastTouched;
-    private boolean commanderMode = false;
-
-    private PlayerState p1State = new PlayerState();
+    private PlayerState p1State;
 
     // could pass these as a map, that way can pass long by ref
     // "plus" : p1Plus, "total" : p1Total, etc
@@ -45,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private Button p2Plus;
     private Button p2Minus;
     private TextView p2Total;
+    private TextView p2Commander;
     private LifeRing p2Ring;
+    private PlayerState p2State;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,40 +61,17 @@ public class MainActivity extends AppCompatActivity {
         p1Total =  (TextView) findViewById(R.id.player1Total);
         p1Ring = (LifeRing) findViewById(R.id.player1Ring);
         p1Commander = (TextView) findViewById(R.id.player1Commander);
+        p1State = new PlayerState();
 
         p2Plus = (Button) findViewById(R.id.p2Plus);
         p2Minus = (Button) findViewById(R.id.p2Minus);
         p2Total =  (TextView) findViewById(R.id.player2Total);
         p2Ring = (LifeRing) findViewById(R.id.player2Ring);
+        p2Commander = (TextView) findViewById(R.id.player2Commander);
+        p2State = new PlayerState();
 
-        p1Total.setOnTouchListener(new View.OnTouchListener() {
-            Timer t = new Timer();
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                //commanderMode = true;
-                //p1LastTouched = System.currentTimeMillis();
-                p1State.setCommanderMode(true);
-                p1State.setLastTouched(System.currentTimeMillis());
-                p1Commander.setTextColor(Color.RED);
-                t.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (p1State.getLastTouch() + 2000 < System.currentTimeMillis()) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    p1Commander.setTextColor(Color.WHITE);
-                                    p1State.setCommanderMode(false);
-                                }
-                            });
-
-                        }
-                    }
-                }, 0, 250);
-
-                return false;
-            }
-        });
+        p1Commander.setVisibility(View.INVISIBLE);
+        p2Commander.setVisibility(View.INVISIBLE);
 
         // Set onTouch listeners for each +/- button
         initButtonListeners();
@@ -118,17 +93,19 @@ public class MainActivity extends AppCompatActivity {
         setTotal(p1Total, start);
         setTotal(p2Total, start);
         setTotal(p1Commander, 0);
-        //setTotal(p2Commander, 0);
+        setTotal(p2Commander, 0);
         p1Ring.setStart(start);
         p2Ring.setStart(start);
     }
 
     // Sets onTouch listeners for each +/- button
     private void initButtonListeners() {
-        setButtonListener(p1Minus, p1Total, p1Ring, -1);
-        setButtonListener(p1Plus, p1Total, p1Ring, 1);
-        setButtonListener(p2Minus, p2Total, p2Ring, -1);
-        setButtonListener(p2Plus, p2Total, p2Ring, 1);
+        setButtonListener(p1Minus, p1Total, p1Commander, p1Ring, p1State, -1);
+        setButtonListener(p1Plus, p1Total, p1Commander, p1Ring, p1State, 1);
+        setButtonListener(p2Minus, p2Total, p2Commander, p2Ring, p2State, -1);
+        setButtonListener(p2Plus, p2Total, p2Commander, p2Ring, p2State, 1);
+        setCommanderListener(p1State, p1Total, p1Commander);
+        setCommanderListener(p2State, p2Total, p2Commander);
     }
 
     // Destroys onTouch listeners (timers can cause leak)
@@ -142,15 +119,54 @@ public class MainActivity extends AppCompatActivity {
         p2Minus.setOnTouchListener(null);
         p1Plus.setOnTouchListener(null);
         p2Plus.setOnTouchListener(null);
+        p1Commander.setOnTouchListener(null);
+        p2Commander.setOnTouchListener(null);
+    }
+
+    // only do this on commander mode switch? we'll see how it impacts performance
+    private void setCommanderListener(PlayerState pState, TextView total, TextView com) {
+        final PlayerState state = pState;
+        final TextView commanderView = com;
+        final Timer t = new Timer();
+        timers.add(t);
+        total.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                state.setCommanderMode(true);
+                state.setLastTouched(System.currentTimeMillis());
+                commanderView.setTextColor(Color.RED);
+                t.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (state.getLastTouch() + 2000 < System.currentTimeMillis()) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    commanderView.setTextColor(Color.WHITE);
+                                    state.setCommanderMode(false);
+                                }
+                            });
+
+                        }
+                    }
+                }, 0, 250);
+
+                return false;
+            }
+        });
     }
 
     // Given a Button, TextView, LifeRing, and button type (+/-),
     // sets an onTouch listener that updates life total and
     // animates ring appropriately on button touch / hold
-    private void setButtonListener(Button b, TextView tv, LifeRing ring, int type) {
+    private void setButtonListener(Button b, TextView tv, TextView com, LifeRing ring,
+                                   PlayerState pState, int type) {
         final TextView textView = tv;
         final LifeRing lifeRing = ring;
         final int buttonType = type;
+        final TextView commanderView = com;
+        final PlayerState state = pState;
         final Timer t = new Timer();
         timers.add(t);
 
@@ -176,16 +192,16 @@ public class MainActivity extends AppCompatActivity {
                                 if(buttonHeld && touchTime < System.currentTimeMillis() - REPEAT) {
                                     heldTriggered  = true;
                                     total = getTotal(textView);
-                                    commander = getTotal(p1Commander);
+                                    commander = getTotal(commanderView);
 
                                     if (buttonType <= 0) {
                                         total -= 5;
-                                        if (p1State.getMode()) {
+                                        if (state.getMode()) {
                                             commander += 5;
                                             if (commander > 21) {
                                                 commander = 21;
                                             }
-                                            setTotal(p1Commander, commander);
+                                            setTotal(commanderView, commander);
                                         }
                                     } else {
                                         total += 5;
@@ -196,8 +212,7 @@ public class MainActivity extends AppCompatActivity {
                                     setTotal(textView, total);
                                     lifeRing.setLife(total);
                                     touchTime += REPEAT;
-                                    //
-                                    p1State.setLastTouched(System.currentTimeMillis());
+                                    state.setLastTouched(System.currentTimeMillis());
                                 }
                             }
                         });
@@ -209,22 +224,22 @@ public class MainActivity extends AppCompatActivity {
                     heldTriggered  = false;
                     touchTime = System.currentTimeMillis();
                     //
-                    p1State.setLastTouched(System.currentTimeMillis());
+                    state.setLastTouched(System.currentTimeMillis());
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     buttonHeld = false;
-                    //
-                    p1State.setLastTouched(System.currentTimeMillis());
+                    state.setLastTouched(System.currentTimeMillis());
                     if (!heldTriggered) {
-                                total = getTotal(textView);
+                        total = getTotal(textView);
+                        commander = getTotal(commanderView);
                         if (buttonType <= 0) {
                             total --;
-                            if (p1State.getMode()) {
+                            if (state.getMode()) {
                                 commander++;
                                 if (commander > 21) {
                                     commander = 21;
                                 }
-                                setTotal(p1Commander, commander);
+                                setTotal(commanderView, commander);
                             }
                         } else {
                             total ++;
@@ -295,9 +310,13 @@ public class MainActivity extends AppCompatActivity {
             if (item.getTitle().toString().equals("EDH")) {
                 startLife = 40;
                 reset(startLife);
+                p1Commander.setVisibility(View.VISIBLE);
+                p2Commander.setVisibility(View.VISIBLE);
             } else {
                 startLife = 20;
                 reset(startLife);
+                p1Commander.setVisibility(View.INVISIBLE);
+                p2Commander.setVisibility(View.INVISIBLE);
             }
         }
 
@@ -307,6 +326,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         destroyListeners();
+        p1State.resetState();
+        p2State.resetState();
+        p1Commander.setTextColor(Color.WHITE);
+        p1Commander.setTextColor(Color.WHITE);
         super.onStop();
     }
 
