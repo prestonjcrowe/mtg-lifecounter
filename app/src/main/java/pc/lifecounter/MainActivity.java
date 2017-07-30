@@ -32,11 +32,6 @@ public class MainActivity extends AppCompatActivity {
     private LifeRing p1Ring;
     private PlayerState p1State;
 
-    // could pass these as a map, that way can pass long by ref
-    // "plus" : p1Plus, "total" : p1Total, etc
-    // this is important for being able to update lastTouched
-    // can also store commanderActive in this data struct
-
     // Player 2 views
     private Button p2Plus;
     private Button p2Minus;
@@ -98,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         p2Ring.setStart(start);
     }
 
-    // Sets onTouch listeners for each +/- button
+    // Sets onTouch listeners for each +/- button and commander textview
     private void initButtonListeners() {
         setButtonListener(p1Minus, p1Total, p1Commander, p1Ring, p1State, -1);
         setButtonListener(p1Plus, p1Total, p1Commander, p1Ring, p1State, 1);
@@ -123,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
         p2Commander.setOnTouchListener(null);
     }
 
-    // only do this on commander mode switch? we'll see how it impacts performance
     private void setCommanderListener(PlayerState pState, TextView total, TextView com) {
         final PlayerState state = pState;
         final TextView commanderView = com;
@@ -157,9 +151,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Given a Button, TextView, LifeRing, and button type (+/-),
-    // sets an onTouch listener that updates life total and
-    // animates ring appropriately on button touch / hold
+    // Given a Button, TextView [total], TextView [commander],
+    // LifeRing, and button type (+/-) sets an onTouch listener
+    // that updates totals and animates ring appropriately on
+    // button touch / hold
     private void setButtonListener(Button b, TextView tv, TextView com, LifeRing ring,
                                    PlayerState pState, int type) {
         final TextView textView = tv;
